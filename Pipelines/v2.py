@@ -8,10 +8,10 @@ from fpdf import FPDF
 import io
 
 # Set up Tesseract command path if necessary
-pyt.pytesseract.tesseract_cmd = "C:\\Program Files (x86)\\Tesseract-OCR\\tesseract.exe"
+pyt.pytesseract.tesseract_cmd = "C:\\Program Files (x86)\\Tesseract-OCR\\tesseract.exe" # Add custom path wherever tesseract ocr is installed
 
 # Title of the app
-st.title("Document Contrast Enhancement with CLAHE, Handwriting Removal, and OCR")
+st.title("Handwritten Text Remover")
 
 # Upload the image
 uploaded_file = st.file_uploader("Choose a document image...", type=["png", "jpg", "jpeg"])
@@ -20,16 +20,16 @@ if uploaded_file is not None:
     # Convert the uploaded file to an OpenCV image
     image = np.array(Image.open(uploaded_file).convert('L'))
 
-    # Sidebar for CLAHE and contrast/brightness settings
+    # Sidebar for CLAHE (Contrast Limited Adaptive Histogram Equalization) and contrast/brightness settings
     st.sidebar.header("CLAHE and Enhancement Settings")
-    clip_limit = st.sidebar.slider("CLAHE Clip Limit", 1.0, 40.0, 1.60, 0.1)
-    tile_grid_size = st.sidebar.slider("CLAHE Tile Grid Size", 2, 16, 14, 1)
+    clip_limit = st.sidebar.slider("CLAHE Clip Limit", 1.0, 40.0, 1.60, 0.1)  # Contrast limit
+    tile_grid_size = st.sidebar.slider("CLAHE Tile Grid Size", 2, 16, 14, 1)  # Grid size for CLAHE
     alpha = st.sidebar.slider("Contrast Alpha", 0.0, 50.0, 1.5, 0.01)
     beta = st.sidebar.slider("Brightness Beta", -255, 255, 0, 1)
 
     # Sidebar for handwriting removal settings
     st.sidebar.header("Handwriting Removal Settings")
-    contour_area_threshold = st.sidebar.slider("Contour Area Threshold", 10, 500, 16, 1)
+    contour_area_threshold = st.sidebar.slider("Contour Area Threshold", 10, 500, 16, 1)  # Threshold for contour areas
 
     # Create a CLAHE object (Contrast Limited Adaptive Histogram Equalization)
     clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=(tile_grid_size, tile_grid_size))
@@ -62,6 +62,12 @@ if uploaded_file is not None:
 
     with col2:
         st.image(handwriting_removed_image, caption='Handwriting Removed Image', use_column_width=True)
+
+    # Add a button to invert the colors of the processed image
+    if st.button("Invert Colors"):
+        inverted_image = cv2.bitwise_not(enhanced_image)
+        inverted_image_pil = Image.fromarray(inverted_image)
+        st.image(inverted_image_pil, caption='Inverted Image', use_column_width=True)
 
     # Option to download the processed image
     st.download_button(
@@ -103,5 +109,4 @@ if uploaded_file is not None:
             data=pdf_buffer.getvalue(),
             file_name="extracted_text.pdf",
             mime="application/pdf"
-    )
-
+        )
